@@ -1,0 +1,23 @@
+{
+  "name": "enjoys/dotenv-writer",
+  "description": "description",
+  "minimum-stability": "stable",
+  "license": "MIT",
+  "require": {
+    "php": ">=8.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5",
+    "enjoys/functions": "^2.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "Enjoys\\DotenvWriter\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\Enjoys\\DotenvWriter\\": "tests/"
+    }
+  }
+}
