@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Enjoys\DotenvWriter;
 
-use Enjoys\DotenvWriter\Line;
+use Enjoys\DotenvWriter\ENV;
 use PHPUnit\Framework\TestCase;
 
 class LineTest extends TestCase

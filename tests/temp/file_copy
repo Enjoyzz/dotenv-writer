@@ -1,2 +1,22 @@
-TEST2=value
-TEST=value2 #test
+VAR1=%var1% #group #1 var #2
+Group_1=null #12
+VAR_G1_1=test_G1_1
+VAR_G1_2=test_G1_2 #group 1 var 2
+# group 1 var 3
+
+VAR_G1_3="test_G1_3 #not comment"
+VAR_G1_4="in double \"qoute's"
+VAR_G1_5="with backslashes \\\\-two backslaches"
+VAR_G1_6="with backslashes double quotes" #comment
+
+## Group2
+# empty group
+# -----
+
+## Group3
+VAR_G3_1=test_G3_1
+VAR_G3_2=test_G3_2
+####
+
+VAR3=va" #lue"
+VAR44="va" #lue"
