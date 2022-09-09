@@ -5,44 +5,117 @@ declare(strict_types=1);
 
 namespace Tests\Enjoys\DotenvWriter;
 
-
-use Dotenv\Parser\Parser;
+use Enjoys\Dotenv\Parser\Env\Comment;
+use Enjoys\Dotenv\Parser\Env\Key;
+use Enjoys\Dotenv\Parser\Env\Value;
+use Enjoys\Dotenv\Parser\Lines\CommentLine;
+use Enjoys\Dotenv\Parser\Lines\EmptyLine;
+use Enjoys\Dotenv\Parser\Lines\EnvLine;
 use Enjoys\DotenvWriter\DotenvWriter;
-use Enjoys\DotenvWriter\Structure;
-use Enjoys\DotenvWriter\ENV;
 use PHPUnit\Framework\TestCase;
-
-use Symfony\Component\Dotenv\Dotenv;
 
 use function Enjoys\FileSystem\createDirectory;
 use function Enjoys\FileSystem\removeDirectoryRecursive;
+
 
 final class SimpleWriteTest extends TestCase
 {
 
     protected function setUp(): void
     {
-        createDirectory(__DIR__.'/temp');
-        removeDirectoryRecursive(__DIR__.'/temp');
+        createDirectory(__DIR__ . '/temp');
+        removeDirectoryRecursive(__DIR__ . '/temp');
     }
 
-    public function testFirst()
+    public function testAddLine()
     {
-        $dotEnvWriter = new DotenvWriter(__DIR__.'/fixtures/with_comments_and_groups');
-        $dotEnvWriter
-            ->setEnv('VAR3', 'va"', 'lue"', needQuotes: false)
-       //     ->setEnv('VAR_G1_6', 'value2', '#42')
-            ->setEnvIf('Group_1', function ($i){
-                    return $i->getValue() === '';
-            }, 'value3')
+        $filename = uniqid();
+        //  copy(__DIR__ . '/fixtures/.env', __DIR__ . '/temp/' . $filename);
+        $dotenvWriter = new DotenvWriter(__DIR__ . '/temp/' . $filename);
+        $dotenvWriter
+            ->addLine(new CommentLine(' Test'))
+            ->addLine(new EmptyLine())
+            ->addLine(
+                new EnvLine(
+                    new Key('VAR'),
+                    new Value('value'),
+                    new Comment('comment')
+                )
+            )
         ;
+        $dotenvWriter->save();
+        $this->assertSame(
+            <<<ENV
+# Test
 
-        $dotEnvWriter->save(__DIR__.'/temp/file_copy');
-       // $this->assertSame('sdaf', file_get_contents('./temp/file_copy'));
+VAR=value #comment
+ENV
+            ,
+            file_get_contents(__DIR__ . '/temp/' . $filename)
+        );
+    }
 
-        $dotenv = new \Enjoys\Dotenv\Dotenv(__DIR__.'/temp/', 'file_copy');
-        $dotenv->loadEnv();
-        var_dump($_ENV['VAR3']);
-        dd($dotenv->getEnvArray());
+    public function testAddLines()
+    {
+        $path = __DIR__ . '/temp/' . uniqid('add_lines_');
+        $dotenvWriter = new DotenvWriter($path);
+        $dotenvWriter->addLines([
+            new EnvLine(new Key('VAR'), new Value('42')),
+            new CommentLine('test'),
+            new EmptyLine(),
+            new EnvLine(new Key('VAR2'), new Value('true')),
+        ]);
+        $dotenvWriter->save();
+        $this->assertSame(
+            <<<ENV
+VAR=42
+#test
+
+VAR2=true
+ENV
+            ,
+            file_get_contents($path)
+        );
+    }
+
+    public function testSetEnv()
+    {
+        copy(__DIR__ . '/fixtures/.env', __DIR__ . '/temp/.env');
+        $dotenvWriter = new DotenvWriter(__DIR__ . '/temp/.env');
+        $dotenvWriter->setEnv('VAR', 'value');
+        $dotenvWriter->setEnv('VAR4');
+        $dotenvWriter->save();
+        $this->assertSame(
+            <<<ENV
+VAR=value
+VAR2
+VAR3=true
+VAR4
+ENV
+            ,
+            file_get_contents(__DIR__ . '/temp/.env')
+        );
+    }
+
+    public function testSetEnvIf()
+    {
+        copy(__DIR__ . '/fixtures/.env', __DIR__ . '/temp/.env');
+        $dotenvWriter = new DotenvWriter(__DIR__ . '/temp/.env');
+        $dotenvWriter->setEnvIf('VAR', function ($line) {
+            return $line->getValue()->getValue() === 'test';
+        }, 'value');
+        $dotenvWriter->setEnvIf('VAR2', function ($line) {
+            return$line->getValue()=== null;
+        }, 'value');
+        $dotenvWriter->save();
+        $this->assertSame(
+            <<<ENV
+VAR=value
+VAR2=value
+VAR3=true
+ENV
+            ,
+            file_get_contents(__DIR__ . '/temp/.env')
+        );
     }
 }
