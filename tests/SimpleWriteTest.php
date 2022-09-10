@@ -101,12 +101,8 @@ ENV
     {
         copy(__DIR__ . '/fixtures/.env', __DIR__ . '/temp/.env');
         $dotenvWriter = new DotenvWriter(__DIR__ . '/temp/.env');
-        $dotenvWriter->setEnvIf('VAR', function ($line) {
-            return $line->getValue()->getValue() === 'test';
-        }, 'value');
-        $dotenvWriter->setEnvIf('VAR2', function ($line) {
-            return$line->getValue()=== null;
-        }, 'value');
+        $dotenvWriter->setEnvIf('VAR', 'value', 'test');
+        $dotenvWriter->setEnvIf('VAR2', 'value', null);
         $dotenvWriter->save();
         $this->assertSame(
             <<<ENV
@@ -118,4 +114,68 @@ ENV
             file_get_contents(__DIR__ . '/temp/.env')
         );
     }
+
+    public function testAddLineAndIfExist()
+    {
+        copy(__DIR__ . '/fixtures/.env', __DIR__ . '/temp/.env');
+        $dotenvWriter = new DotenvWriter(__DIR__ . '/temp/.env');
+        $dotenvWriter
+            ->addLine(
+                new EnvLine(
+                    new Key('VAR'),
+                    new Value('value'),
+                    new Comment('comment')
+                )
+            )
+        ;
+        $dotenvWriter->save();
+        $this->assertSame(
+            <<<ENV
+VAR=test
+VAR2
+VAR3=true
+ENV
+            ,
+            file_get_contents(__DIR__ . '/temp/.env')
+        );
+    }
+
+
+    public function testSetEnvWithComment()
+    {
+        copy(__DIR__ . '/fixtures/.env', __DIR__ . '/temp/.env');
+        $dotenvWriter = new DotenvWriter(__DIR__ . '/temp/.env');
+        $dotenvWriter->setEnv('VAR', 'value');
+        $dotenvWriter->setEnv('VAR4', '42', 'comment');
+        $dotenvWriter->save();
+        $this->assertSame(
+            <<<ENV
+VAR=value
+VAR2
+VAR3=true
+VAR4=42 #comment
+ENV
+            ,
+            file_get_contents(__DIR__ . '/temp/.env')
+        );
+    }
+
+    public function testSetEnvIfNotExists()
+    {
+        copy(__DIR__ . '/fixtures/.env', __DIR__ . '/temp/.env');
+        $dotenvWriter = new DotenvWriter(__DIR__ . '/temp/.env');
+        $dotenvWriter->setEnvIf('VAR4', 'value', 'test');
+        $dotenvWriter->save();
+        $this->assertSame(
+            <<<ENV
+VAR=test
+VAR2
+VAR3=true
+ENV
+            ,
+            file_get_contents(__DIR__ . '/temp/.env')
+        );
+    }
+
+
 }

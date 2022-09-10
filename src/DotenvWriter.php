@@ -26,11 +26,10 @@ final class DotenvWriter
     public function __construct(private string $path)
     {
         if (!file_exists($path)) {
-            $resource = fopen($path, 'w+');
-            fclose($resource);
+             fopen($path, 'w+');
         }
-        $content = file_get_contents($path);
-        $this->structure = (new Parser())->parseStructure($content);
+
+        $this->structure = (new Parser())->parseStructure(file_get_contents($path));
         if (count($this->structure) === 1 && current($this->structure) instanceof EmptyLine) {
             $this->structure = [];
         }
@@ -98,23 +97,21 @@ final class DotenvWriter
 
     /**
      * @param Key|string $key
-     * @param callable(EnvLine):bool $condition
-     * @param Value|string|null $value
-     * @param Comment|string|null $comment
+     * @param Value|string|null $newValue
+     * @param string|null $conditionValue
      * @return $this
      */
     public function setEnvIf(
         Key|string $key,
-        callable $condition,
-        Value|string|null $value = null,
-        Comment|string|null $comment = null,
+        Value|string|null $newValue,
+        ?string $conditionValue,
     ): DotenvWriter {
         $line = $this->findEnvLine($key);
         if ($line === null) {
             return $this;
         }
-        if ($condition($line)) {
-            $this->setEnv($key, $value, $comment);
+        if ($line->getValue()?->getValue() === $conditionValue) {
+            $this->setEnv($key, $newValue);
         }
         return $this;
     }

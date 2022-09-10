@@ -20,8 +20,8 @@ $dotenvWriter->addLines([
     //...
 ]);
 
-$dotenvWriter->setEnv()
-$dotenvWriter->setEnvIf()
+$dotenvWriter->setEnv('KEY', 'Value', 'Comment')
+$dotenvWriter->setEnvIf('KEY', 'newValue', 'conditionValue')
 $dotenvWriter->addEnvIfNotExist()
 
 ```
