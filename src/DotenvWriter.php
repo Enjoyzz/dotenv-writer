@@ -128,5 +128,25 @@ final class DotenvWriter
         return $this->structure[$key] ?? null;
     }
 
+    public function filterEnv(string $regexp, bool $return_only_keys = false): array
+    {
+        $result = array_filter($this->structure, function ($key) use ($regexp) {
+            if (!is_string($key)){
+                return false;
+            }
+            return preg_match($regexp, $key);
+        }, ARRAY_FILTER_USE_KEY);
+
+        return ($return_only_keys) ? array_keys($result): $result;
+    }
+
+    public function removeEnvLine(string|Key $key): void
+    {
+        if ($key instanceof Key) {
+            $key = $key->getValue();
+        }
+        unset($this->structure[$key]);
+    }
+
 
 }
