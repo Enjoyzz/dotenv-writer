@@ -14,10 +14,17 @@ use function Enjoys\FileSystem\removeDirectoryRecursive;
 
 final class MatchTest extends TestCase
 {
+    private string $tmpDir = __DIR__ . '/temp';
+
     protected function setUp(): void
     {
-        createDirectory(__DIR__ . '/temp');
-        removeDirectoryRecursive(__DIR__ . '/temp');
+        removeDirectoryRecursive($this->tmpDir, true);
+    }
+
+
+    protected function tearDown(): void
+    {
+        removeDirectoryRecursive($this->tmpDir, true);
     }
 
     public function testFindEnvFileByMask()

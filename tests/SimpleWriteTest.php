@@ -14,24 +14,31 @@ use Enjoys\Dotenv\Parser\Lines\EnvLine;
 use Enjoys\DotenvWriter\DotenvWriter;
 use PHPUnit\Framework\TestCase;
 
-use function Enjoys\FileSystem\createDirectory;
+use function Enjoys\FileSystem\copyFile;
 use function Enjoys\FileSystem\removeDirectoryRecursive;
 
 
 final class SimpleWriteTest extends TestCase
 {
 
+    private string $tmpDir = __DIR__ . '/temp';
+
     protected function setUp(): void
     {
-        createDirectory(__DIR__ . '/temp');
-        removeDirectoryRecursive(__DIR__ . '/temp');
+        removeDirectoryRecursive($this->tmpDir, true);
+    }
+
+
+    protected function tearDown(): void
+    {
+        removeDirectoryRecursive($this->tmpDir, true);
     }
 
     public function testAddLine()
     {
         $filename = uniqid();
-        //  copy(__DIR__ . '/fixtures/.env', __DIR__ . '/temp/' . $filename);
-        $dotenvWriter = new DotenvWriter(__DIR__ . '/temp/' . $filename);
+        //  copyFile(__DIR__ . '/fixtures/.env', __DIR__ . '/temp/' . $filename);
+        $dotenvWriter = new DotenvWriter($this->tmpDir . '/' . $filename);
         $dotenvWriter
             ->addLine(new CommentLine(' Test'))
             ->addLine(new EmptyLine())
@@ -51,13 +58,13 @@ final class SimpleWriteTest extends TestCase
 VAR=value #comment
 ENV
             ,
-            file_get_contents(__DIR__ . '/temp/' . $filename)
+            file_get_contents($this->tmpDir . '/' . $filename)
         );
     }
 
     public function testAddLines()
     {
-        $path = __DIR__ . '/temp/' . uniqid('add_lines_');
+        $path = $this->tmpDir . '/' . uniqid('add_lines_');
         $dotenvWriter = new DotenvWriter($path);
         $dotenvWriter->addLines([
             new EnvLine(new Key('VAR'), new Value('42')),
@@ -80,7 +87,7 @@ ENV
 
     public function testSetEnv()
     {
-        copy(__DIR__ . '/fixtures/.env', __DIR__ . '/temp/.env');
+        copyFile(__DIR__ . '/fixtures/.env', $this->tmpDir . '/.env');
         $dotenvWriter = new DotenvWriter(__DIR__ . '/temp/.env');
         $dotenvWriter->setEnv('VAR', 'value');
         $dotenvWriter->setEnv('VAR4');
@@ -99,7 +106,7 @@ ENV
 
     public function testSetEnvIf()
     {
-        copy(__DIR__ . '/fixtures/.env', __DIR__ . '/temp/.env');
+        copyFile(__DIR__ . '/fixtures/.env', $this->tmpDir . '/.env');
         $dotenvWriter = new DotenvWriter(__DIR__ . '/temp/.env');
         $dotenvWriter->setEnvIf('VAR', 'value', 'test');
         $dotenvWriter->setEnvIf('VAR2', 'value', null);
@@ -111,13 +118,13 @@ VAR2=value
 VAR3=true
 ENV
             ,
-            file_get_contents(__DIR__ . '/temp/.env')
+            file_get_contents($this->tmpDir . '/.env')
         );
     }
 
     public function testAddLineAndIfExist()
     {
-        copy(__DIR__ . '/fixtures/.env', __DIR__ . '/temp/.env');
+        copyFile(__DIR__ . '/fixtures/.env', $this->tmpDir . '/.env');
         $dotenvWriter = new DotenvWriter(__DIR__ . '/temp/.env');
         $dotenvWriter
             ->addLine(
@@ -136,14 +143,14 @@ VAR2
 VAR3=true
 ENV
             ,
-            file_get_contents(__DIR__ . '/temp/.env')
+            file_get_contents($this->tmpDir . '/.env')
         );
     }
 
 
     public function testSetEnvWithComment()
     {
-        copy(__DIR__ . '/fixtures/.env', __DIR__ . '/temp/.env');
+        copyFile(__DIR__ . '/fixtures/.env', $this->tmpDir . '/.env');
         $dotenvWriter = new DotenvWriter(__DIR__ . '/temp/.env');
         $dotenvWriter->setEnv('VAR', 'value');
         $dotenvWriter->setEnv('VAR4', '42', 'comment');
@@ -156,13 +163,13 @@ VAR3=true
 VAR4=42 #comment
 ENV
             ,
-            file_get_contents(__DIR__ . '/temp/.env')
+            file_get_contents($this->tmpDir . '/.env')
         );
     }
 
     public function testSetEnvIfNotExists()
     {
-        copy(__DIR__ . '/fixtures/.env', __DIR__ . '/temp/.env');
+        copyFile(__DIR__ . '/fixtures/.env', $this->tmpDir . '/.env');
         $dotenvWriter = new DotenvWriter(__DIR__ . '/temp/.env');
         $dotenvWriter->setEnvIf('VAR4', 'value', 'test');
         $dotenvWriter->save();
@@ -173,7 +180,7 @@ VAR2
 VAR3=true
 ENV
             ,
-            file_get_contents(__DIR__ . '/temp/.env')
+            file_get_contents($this->tmpDir . '/.env')
         );
     }
 

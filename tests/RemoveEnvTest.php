@@ -9,26 +9,34 @@ namespace Tests\Enjoys\DotenvWriter;
 use Enjoys\DotenvWriter\DotenvWriter;
 use PHPUnit\Framework\TestCase;
 
-use function Enjoys\FileSystem\createDirectory;
+use function Enjoys\FileSystem\copyFile;
 use function Enjoys\FileSystem\removeDirectoryRecursive;
 
 final class RemoveEnvTest extends TestCase
 {
+    private string $tmpDir = __DIR__ . '/temp';
+
     protected function setUp(): void
     {
-        createDirectory(__DIR__ . '/temp');
-        removeDirectoryRecursive(__DIR__ . '/temp');
+        removeDirectoryRecursive($this->tmpDir, true);
+    }
+
+
+    protected function tearDown(): void
+    {
+        removeDirectoryRecursive($this->tmpDir, true);
     }
 
     public function testRemoveEnv()
     {
-        $dotenvWriter = new DotenvWriter(__DIR__ . '/fixtures/.match');
+        copyFile(__DIR__ . '/fixtures/.match', $originalFile = $this->tmpDir . '/.' . uniqid('match_copy'));
+        $dotenvWriter = new DotenvWriter($originalFile);
         $result = $dotenvWriter->filterEnv('/^DATABASE_/', true);
         foreach ($result as $key) {
             $dotenvWriter->removeEnvLine($key);
         }
 
-        $save_path = __DIR__ . '/temp/' . uniqid('remove_lines_');
+        $save_path = $this->tmpDir . '/.' . uniqid('remove_lines_');
         $dotenvWriter->save($save_path);
 
         $this->assertSame(

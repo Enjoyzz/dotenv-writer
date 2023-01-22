@@ -15,6 +15,10 @@ use Enjoys\Dotenv\Parser\Lines\EnvLine;
 use Enjoys\Dotenv\Parser\Lines\LineInterface;
 use Enjoys\Dotenv\Parser\Parser;
 
+use Exception;
+
+use function Enjoys\FileSystem\writeFile;
+
 final class DotenvWriter
 {
 
@@ -23,10 +27,13 @@ final class DotenvWriter
      */
     private array $structure;
 
+    /**
+     * @throws Exception
+     */
     public function __construct(private string $path)
     {
         if (!file_exists($path)) {
-             fopen($path, 'w+');
+             writeFile($path, '', 'w+');
         }
 
         $this->structure = (new Parser())->parseStructure(file_get_contents($path));
