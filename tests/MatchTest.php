@@ -20,10 +20,10 @@ final class MatchTest extends TestCase
         removeDirectoryRecursive(__DIR__ . '/temp');
     }
 
-    public function testFineEnvFileByMask()
+    public function testFindEnvFileByMask()
     {
         $dotenvWriter = new DotenvWriter(__DIR__ . '/fixtures/.match');
-        $result = $dotenvWriter->filterEnv('/c/');
+        $result = $dotenvWriter->filterEnv('/^DATABASE_/');
         $this->assertSame([
             'DATABASE_TYPE',
             'DATABASE_HOST',
