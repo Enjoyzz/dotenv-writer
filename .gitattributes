@@ -1,1 +1,6 @@
 * text=auto eol=lf
+
+.* export-ignore
+infection.json export-ignore
+phpunit.xml export-ignore
+tests/ export-ignore
