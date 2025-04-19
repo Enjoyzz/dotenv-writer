@@ -42,7 +42,7 @@ final class DotenvWriter
         }
     }
 
-    public function save(string $target = null): void
+    public function save(?string $target = null): void
     {
         if ($target === null) {
             $target = $this->path;
